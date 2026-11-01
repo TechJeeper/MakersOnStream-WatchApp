@@ -1,0 +1,14 @@
+---
+description: Always commit, push to GitHub, and refresh the CloudPebble zip after app changes
+alwaysApply: true
+---
+
+# Always deploy
+
+After making app changes (not docs-only chatter):
+
+1. Rebuild with `./build.ps1 -Zip` so `build/*.pbw` and `dist/MakersOnStream-cloudpebble.zip` stay current.
+2. Commit relevant source changes (never commit secrets, `build/`, or `node_modules/`).
+3. Push to `origin` on GitHub without waiting to be asked.
+
+Do not ask whether to deploy unless push fails or the user explicitly said not to push.

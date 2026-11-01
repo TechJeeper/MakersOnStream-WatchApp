@@ -45,6 +45,21 @@ static GColor color_muted(void) {
 #endif
 }
 
+// B&W MenuLayer defaults to white cells; we always painted white text, so only
+// the highlighted (inverted) row was visible. Paint bg + contrast ourselves.
+static void row_palette(const Layer *cell, GColor *bg, GColor *title, GColor *sub) {
+  const bool hi = menu_cell_layer_is_highlighted(cell);
+#ifdef PBL_COLOR
+  *bg = hi ? GColorDarkGray : GColorBlack;
+  *title = GColorWhite;
+  *sub = GColorLightGray;
+#else
+  *bg = hi ? GColorWhite : GColorBlack;
+  *title = hi ? GColorBlack : GColorWhite;
+  *sub = *title;
+#endif
+}
+
 static uint16_t menu_num_sections(MenuLayer *layer, void *ctx) {
   (void)layer;
   (void)ctx;
@@ -64,11 +79,19 @@ static int16_t menu_header_height(MenuLayer *layer, uint16_t section, void *ctx)
   return 22;
 }
 
+static int16_t menu_cell_height(MenuLayer *layer, MenuIndex *index, void *ctx) {
+  (void)layer;
+  (void)index;
+  (void)ctx;
+  return 44;
+}
+
 static void menu_draw_header(GContext *ctx, const Layer *cell, uint16_t section, void *data) {
   (void)data;
   MosData *d = data_get();
   char title[24];
   GColor accent = section == 0 ? color_live() : color_soon();
+  GRect bounds = layer_get_bounds(cell);
 
   if (section == 0) {
     if (d->state == MOS_STATE_READY) {
@@ -84,8 +107,8 @@ static void menu_draw_header(GContext *ctx, const Layer *cell, uint16_t section,
     }
   }
 
-  graphics_context_set_fill_color(ctx, color_bg());
-  graphics_fill_rect(ctx, layer_get_bounds(cell), 0, GCornerNone);
+  graphics_context_set_fill_color(ctx, GColorBlack);
+  graphics_fill_rect(ctx, bounds, 0, GCornerNone);
 
   graphics_context_set_fill_color(ctx, accent);
   graphics_fill_rect(ctx, GRect(0, 6, 3, 12), 0, GCornerNone);
@@ -93,16 +116,21 @@ static void menu_draw_header(GContext *ctx, const Layer *cell, uint16_t section,
   graphics_context_set_text_color(ctx, accent);
   graphics_draw_text(ctx, title,
                      fonts_get_system_font(FONT_KEY_GOTHIC_14_BOLD),
-                     GRect(10, 2, layer_get_bounds(cell).size.w - 14, 18),
+                     GRect(10, 2, bounds.size.w - 14, 18),
                      GTextOverflowModeTrailingEllipsis,
                      GTextAlignmentLeft, NULL);
 }
 
 static void draw_placeholder_row(GContext *ctx, const Layer *cell, const char *text) {
-  graphics_context_set_text_color(ctx, color_muted());
+  GColor bg, title, sub;
+  GRect bounds = layer_get_bounds(cell);
+  row_palette(cell, &bg, &title, &sub);
+  graphics_context_set_fill_color(ctx, bg);
+  graphics_fill_rect(ctx, bounds, 0, GCornerNone);
+  graphics_context_set_text_color(ctx, sub);
   graphics_draw_text(ctx, text,
                      fonts_get_system_font(FONT_KEY_GOTHIC_18),
-                     GRect(8, 8, layer_get_bounds(cell).size.w - 16, 28),
+                     GRect(8, 8, bounds.size.w - 16, 28),
                      GTextOverflowModeTrailingEllipsis,
                      GTextAlignmentLeft, NULL);
 }
@@ -111,6 +139,7 @@ static void menu_draw_row(GContext *ctx, const Layer *cell, MenuIndex *index, vo
   (void)data;
   MosData *d = data_get();
   GRect bounds = layer_get_bounds(cell);
+  GColor bg, title, sub;
 
   if (d->state != MOS_STATE_READY) {
     if (index->section == 0) {
@@ -129,16 +158,20 @@ static void menu_draw_row(GContext *ctx, const Layer *cell, MenuIndex *index, vo
     return;
   }
 
-  graphics_context_set_text_color(ctx, GColorWhite);
+  row_palette(cell, &bg, &title, &sub);
+  graphics_context_set_fill_color(ctx, bg);
+  graphics_fill_rect(ctx, bounds, 0, GCornerNone);
+
+  graphics_context_set_text_color(ctx, title);
   graphics_draw_text(ctx, item->name,
                      fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD),
                      GRect(8, 0, bounds.size.w - 16, 22),
                      GTextOverflowModeTrailingEllipsis,
                      GTextAlignmentLeft, NULL);
 
-  const char *sub = item->subtitle[0] ? item->subtitle : item->when;
-  graphics_context_set_text_color(ctx, color_muted());
-  graphics_draw_text(ctx, sub,
+  const char *line = item->subtitle[0] ? item->subtitle : item->when;
+  graphics_context_set_text_color(ctx, sub);
+  graphics_draw_text(ctx, line,
                      fonts_get_system_font(FONT_KEY_GOTHIC_14),
                      GRect(8, 22, bounds.size.w - 16, 18),
                      GTextOverflowModeTrailingEllipsis,
@@ -201,6 +234,7 @@ static void main_window_load(Window *window) {
     .get_num_sections = menu_num_sections,
     .get_num_rows = menu_num_rows,
     .get_header_height = menu_header_height,
+    .get_cell_height = menu_cell_height,
     .draw_header = menu_draw_header,
     .draw_row = menu_draw_row,
     .select_click = menu_select,
