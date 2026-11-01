@@ -1,0 +1,42 @@
+{
+  "name": "makersonstream-watchapp",
+  "author": "caffeinegamer",
+  "version": "1.0.0",
+  "keywords": ["pebble-app", "makersonstream", "streaming", "makers"],
+  "private": true,
+  "dependencies": {},
+  "pebble": {
+    "displayName": "MakersOnStream",
+    "uuid": "c25b130e-7f8f-4cb3-8375-ba5c60d96ad1",
+    "sdkVersion": "3",
+    "enableMultiJS": true,
+    "targetPlatforms": ["emery", "basalt", "diorite", "flint"],
+    "watchapp": {
+      "watchface": false
+    },
+    "capabilities": ["configurable"],
+    "messageKeys": [
+      "Cmd",
+      "Kind",
+      "Index",
+      "LiveCount",
+      "SoonCount",
+      "Name",
+      "Subtitle",
+      "When",
+      "Platform",
+      "Mode",
+      "Status"
+    ],
+    "resources": {
+      "media": [
+        {
+          "type": "bitmap",
+          "name": "IMAGE_MENU_ICON",
+          "file": "images/menu_icon.png",
+          "menuIcon": true
+        }
+      ]
+    }
+  }
+}
