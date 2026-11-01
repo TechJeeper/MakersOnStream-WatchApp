@@ -1,6 +1,8 @@
-// Phone side: fetch MakersOnStream live + upcoming, push to the watch.
+// Phone side: Clay settings + fetch MakersOnStream live/upcoming for the watch.
 
-var configPage = require('./config_page');
+var Clay = require('@rebble/clay');
+var clayConfig = require('./config.json');
+var clay = new Clay(clayConfig, null, { autoHandleEvents: false });
 
 var API_BASE = 'https://makersonstream.app/api/v1';
 var STORE_KEY = 'mos.watch.settings';
@@ -65,7 +67,6 @@ function platformLabel(p) {
 
 function parseWhen(isoLike) {
   if (!isoLike) return null;
-  // API returns "YYYY-MM-DD HH:MM:SS" (UTC-ish server local). Treat as UTC if no Z.
   var s = String(isoLike).trim();
   if (/^\d{4}-\d{2}-\d{2} /.test(s)) {
     s = s.replace(' ', 'T') + 'Z';
@@ -279,25 +280,13 @@ function refresh() {
   });
 }
 
-function configUrl() {
-  var json = JSON.stringify(settings).replace(/</g, '\\u003c');
-  var returnTo = Pebble.platform === 'pypkjs' ? '$$$RETURN_TO$$$' : 'pebblejs://close#';
-  var html = configPage
-    .replace('"__MOS_STATE__"', function () { return json; })
-    .replace('__RETURN_TO__', function () { return returnTo; });
-  return 'data:text/html;charset=utf-8,' + encodeURIComponent(html);
-}
-
-function parseResponse(response) {
-  try {
-    return JSON.parse(response);
-  } catch (e) {
-    try {
-      return JSON.parse(decodeURIComponent(response));
-    } catch (e2) {
-      return null;
-    }
+function clayValue(dict, key, fallback) {
+  if (!dict || dict[key] === undefined || dict[key] === null) return fallback;
+  // Clay may return { value: ... } objects depending on convert mode.
+  if (typeof dict[key] === 'object' && dict[key].value !== undefined) {
+    return dict[key].value;
   }
+  return dict[key];
 }
 
 Pebble.addEventListener('ready', function () {
@@ -314,13 +303,22 @@ Pebble.addEventListener('appmessage', function (e) {
 
 Pebble.addEventListener('showConfiguration', function () {
   if (!settings) settings = clamp(load());
-  Pebble.openURL(configUrl());
+  clay.setSettings({
+    FeedMode: settings.mode,
+    ApiKey: settings.apiKey,
+    Days: String(settings.days)
+  });
+  Pebble.openURL(clay.generateUrl());
 });
 
 Pebble.addEventListener('webviewclosed', function (e) {
-  var page = e && e.response ? parseResponse(e.response) : null;
-  if (!page) return;
-  settings = clamp(Object.assign({}, settings, page));
+  if (!e || !e.response) return;
+  var dict = clay.getSettings(e.response, false);
+  settings = clamp({
+    apiKey: clayValue(dict, 'ApiKey', settings.apiKey),
+    mode: clayValue(dict, 'FeedMode', settings.mode),
+    days: clayValue(dict, 'Days', settings.days)
+  });
   save(settings);
   refresh();
 });

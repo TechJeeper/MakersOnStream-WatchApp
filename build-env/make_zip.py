@@ -7,7 +7,7 @@ root = os.path.abspath(sys.argv[1] if len(sys.argv) > 1 else '.')
 os.makedirs(os.path.join(root, 'dist'), exist_ok=True)
 out = os.path.join(root, 'dist', 'MakersOnStream-cloudpebble.zip')
 with zipfile.ZipFile(out, 'w', zipfile.ZIP_DEFLATED) as z:
-    for item in ('package.json', 'wscript', 'resources', 'src', 'config'):
+    for item in ('package.json', 'wscript', 'resources', 'src'):
         path = os.path.join(root, item)
         if os.path.isfile(path):
             z.write(path, 'MakersOnStreamWatchApp/' + item)

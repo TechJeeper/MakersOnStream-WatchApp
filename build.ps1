@@ -36,7 +36,7 @@ if ($Shell) {
     exit $LASTEXITCODE
 }
 
-$cmd = "$setup && pebble build"
+$cmd = "$setup && npm install --no-fund --no-audit && pebble build"
 if ($Zip) { $cmd += " && python3 build-env/make_zip.py" }
 if ($Phone) { $cmd += " && pebble install --phone $Phone" }
 & $engine @run $image bash -c $cmd

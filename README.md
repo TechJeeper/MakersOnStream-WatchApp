@@ -17,7 +17,9 @@ Sections:
 
 ## Settings (phone)
 
-Open **MakersOnStream → Settings** in the Pebble app:
+Uses **Clay** for the config page (works in the Pebble / Core Devices app).
+
+Open **MakersOnStream → Settings**:
 
 - **Everyone** — public live list + calendar (no API key)
 - **Following** — only makers you follow (needs your API key from [Account](https://makersonstream.app/account))
@@ -42,6 +44,5 @@ Output: `build/MakersOnStreamWatchApp.pbw`
 
 ```
 src/c/       watch UI + AppMessage
-src/pkjs/    API fetch + settings
-config/      phone settings page
+src/pkjs/    Clay config + API fetch
 ```

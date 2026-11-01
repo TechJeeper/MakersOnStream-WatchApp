@@ -1,10 +1,12 @@
 {
   "name": "makersonstream-watchapp",
   "author": "caffeinegamer",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "keywords": ["pebble-app", "makersonstream", "streaming", "makers"],
   "private": true,
-  "dependencies": {},
+  "dependencies": {
+    "@rebble/clay": "^1.0.8"
+  },
   "pebble": {
     "displayName": "MakersOnStream",
     "uuid": "c25b130e-7f8f-4cb3-8375-ba5c60d96ad1",
@@ -26,7 +28,10 @@
       "When",
       "Platform",
       "Mode",
-      "Status"
+      "Status",
+      "FeedMode",
+      "ApiKey",
+      "Days"
     ],
     "resources": {
       "media": [

@@ -1,0 +1,57 @@
+[
+  {
+    "type": "heading",
+    "defaultValue": "MakersOnStream",
+    "size": 2
+  },
+  {
+    "type": "text",
+    "defaultValue": "See who's live and what's coming up next on your wrist."
+  },
+  {
+    "type": "section",
+    "items": [
+      {
+        "type": "heading",
+        "defaultValue": "Feed"
+      },
+      {
+        "type": "select",
+        "messageKey": "FeedMode",
+        "label": "Show",
+        "defaultValue": "all",
+        "description": "Following requires your API key.",
+        "options": [
+          { "label": "Everyone", "value": "all" },
+          { "label": "Following", "value": "following" }
+        ]
+      },
+      {
+        "type": "input",
+        "messageKey": "ApiKey",
+        "label": "API key",
+        "defaultValue": "",
+        "description": "From makersonstream.app/account",
+        "attributes": {
+          "type": "password",
+          "placeholder": "Paste API key"
+        }
+      },
+      {
+        "type": "select",
+        "messageKey": "Days",
+        "label": "Upcoming window",
+        "defaultValue": "2",
+        "options": [
+          { "label": "1 day", "value": "1" },
+          { "label": "2 days", "value": "2" },
+          { "label": "3 days", "value": "3" }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "submit",
+    "defaultValue": "Save"
+  }
+]

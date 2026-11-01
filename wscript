@@ -1,9 +1,6 @@
 #
-# MakersOnStream WatchApp — embeds config/index.html into the phone JS bundle.
+# MakersOnStream WatchApp (Clay config + phone JS).
 #
-import json
-import os.path
-
 top = '.'
 out = 'build'
 
@@ -16,26 +13,8 @@ def configure(ctx):
     ctx.load('pebble_sdk')
 
 
-def embed_config_page(ctx):
-    src = ctx.path.find_node('config/index.html')
-    dst = ctx.path.find_node('src/pkjs/config_page.js')
-    if src is None:
-        if dst is None:
-            ctx.fatal('config/index.html and src/pkjs/config_page.js are both missing')
-        return
-    text = src.read(encoding='utf-8').lstrip('\ufeff')
-    lines = [line.strip() for line in text.splitlines()]
-    html = '\n'.join(line for line in lines if line)
-    js = ('// Generated from config/index.html by wscript. Do not edit.\n'
-          'module.exports = ' + json.dumps(html) + ';\n')
-    out = ctx.path.make_node('src/pkjs/config_page.js')
-    if not os.path.exists(out.abspath()) or out.read(encoding='utf-8') != js:
-        out.write(js, encoding='utf-8')
-
-
 def build(ctx):
     ctx.load('pebble_sdk')
-    embed_config_page(ctx)
 
     binaries = []
 
@@ -50,5 +29,5 @@ def build(ctx):
 
     ctx.set_group('bundle')
     ctx.pbl_bundle(binaries=binaries,
-                   js=ctx.path.ant_glob(['src/pkjs/**/*.js']),
+                   js=ctx.path.ant_glob(['src/pkjs/**/*.js', 'src/pkjs/**/*.json']),
                    js_entry_file='src/pkjs/index.js')
